@@ -62,7 +62,32 @@ app.post("/api/scores",requireAuth,async(req,res)=>{
     const progression=applyXp(user,reward.xp);
     const updated=await tx.user.update({where:{id:user.id},data:{coins:{increment:reward.coins},xp:progression.xp,level:progression.level}});
     const score=await tx.score.create({data:{userId:user.id,gameId:parsed.data.gameId,score:reward.score,coinsAwarded:reward.coins,xpAwarded:reward.xp}});
-    return {updated,score,progression};
+    const d=new Date().toISOString().slice(0,10);
+    const daily=await tx.dailyChallenge.findMany({where:{dateKey:d}});
+    for(const c of daily){
+      let increment=0;
+      if(c.challengeId==="plays") increment=1;
+      if(c.challengeId==="score") increment=reward.score;
+      if(c.gameId===parsed.data.gameId && c.challengeId!=="plays" && c.challengeId!=="score") increment=1;
+      if(increment){
+        const prev=await tx.challengeProgress.findUnique({where:{userId_challengeId_dateKey:{userId:user.id,challengeId:c.challengeId,dateKey:d}}});
+        const next=Math.min(c.target,(prev?.value||0)+increment);
+        const completed=next>=c.target;
+        const wasCompleted=prev?.completed||false;
+        await tx.challengeProgress.upsert({
+          where:{userId_challengeId_dateKey:{userId:user.id,challengeId:c.challengeId,dateKey:d}},
+          update:{value:next,completed},
+          create:{userId:user.id,challengeId:c.challengeId,dateKey:d,value:next,completed}
+        });
+        if(completed&&!wasCompleted){
+          await tx.user.update({where:{id:user.id},data:{coins:{increment:c.rewardCoins},xp:{increment:c.rewardXp}}});
+        }
+      }
+    }
+    const beforeBonus=await tx.user.findUnique({where:{id:user.id}});
+    const finalProgression=applyXp(beforeBonus, 0);
+    const finalUser=await tx.user.update({where:{id:user.id},data:{level:finalProgression.level,xp:finalProgression.xp}});
+    return {updated:finalUser,score,progression:finalProgression};
   });
   res.status(201).json({score:result.score,coinsAwarded:result.score.coinsAwarded,xpAwarded:result.score.xpAwarded,user:publicUser(result.updated)});
 });
