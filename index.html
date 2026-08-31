@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#090b16">
+  <title>ArcadeVerse — 3D Mini Game Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="app">
+    <div id="bg3d"></div>
+    <header class="topbar glass">
+      <button class="brand" data-view="home"><span class="brand-orb">✦</span><span>ARCADE<span>VERSE</span></span></button>
+      <nav>
+        <button data-view="home">Home</button>
+        <button data-view="games">Games</button>
+        <button data-view="pass">Battle Pass</button>
+        <button data-view="shop">Shop</button>
+        <button data-view="profile">Profile</button>
+      </nav>
+      <div class="wallet"><span>🪙</span><b id="coins">0</b><span class="xp-mini"><i id="xpBar"></i></span><span id="level">Lv. 1</span></div>
+    </header>
+
+    <main>
+      <section id="home" class="view active">
+        <div class="hero">
+          <div>
+            <div class="eyebrow">SEASON 01 · NEON HORIZON</div>
+            <h1>PLAY.<br><em>COLLECT.</em><br>UNLOCK.</h1>
+            <p>Eine kleine 3D Arcade-Welt mit Minispielen, Highscores, Coins, Daily Challenges, Battle Pass und Cosmetics.</p>
+            <div class="actions"><button class="primary" data-view="games">JETZT SPIELEN <span>→</span></button><button class="secondary" data-view="shop">SHOP ÖFFNEN</button></div>
+          </div>
+          <div class="hero-card glass">
+            <div class="hero-character" id="heroCharacter"><div class="head"></div><div class="body"></div><div class="visor"></div><div class="ring"></div></div>
+            <div class="hero-card-label">DEIN AVATAR</div>
+            <strong id="homeSkin">Neon Rookie</strong>
+            <small id="homeStats">0 Spiele · 0 Highscores</small>
+          </div>
+        </div>
+        <div class="section-head"><div><span class="eyebrow">HEUTE</span><h2>Daily Challenges</h2></div><button class="text-btn" data-view="pass">Alle Rewards →</button></div>
+        <div id="dailyHome" class="challenge-grid"></div>
+        <div class="section-head"><div><span class="eyebrow">QUICK PLAY</span><h2>Minispiele</h2></div><button class="text-btn" data-view="games">Alle Spiele →</button></div>
+        <div id="featuredGames" class="game-grid"></div>
+      </section>
+
+      <section id="games" class="view">
+        <div class="page-title"><span class="eyebrow">ARCADE</span><h1>Wähle dein Spiel</h1><p>Kurze Runs, schnelle Scores. Jede Runde bringt XP und Coins.</p></div>
+        <div id="allGames" class="game-grid large"></div>
+      </section>
+
+      <section id="game" class="view">
+        <div class="game-top"><button class="secondary small" data-view="games">← Zurück</button><div><span class="eyebrow" id="gameEyebrow">ARCADE</span><h2 id="gameTitle">Game</h2></div><div class="score-box"><span>SCORE</span><b id="gameScore">0</b></div></div>
+        <div id="gameStage" class="game-stage glass"></div>
+        <div class="game-footer"><span id="gameHint">Bereit?</span><div><span>Highscore <b id="gameHighscore">0</b></span><span>Belohnung <b>🪙 +</b><b id="gameReward">0</b></span></div></div>
+      </section>
+
+      <section id="pass" class="view">
+        <div class="page-title"><span class="eyebrow">SEASON 01</span><h1>Battle Pass</h1><p>Spiele, verdiene XP und schalte die Neon-Horizon-Reihe frei.</p></div>
+        <div class="pass-hero glass"><div><span class="eyebrow">SEASON PROGRESS</span><h2 id="passProgressText">Level 1</h2><div class="progress"><i id="passBar"></i></div></div><div class="season-badge">01</div></div>
+        <div id="passGrid" class="pass-grid"></div>
+      </section>
+
+      <section id="shop" class="view">
+        <div class="page-title"><span class="eyebrow">COSMETICS</span><h1>Item Shop</h1><p>Bezahle mit Coins. Ausgerüstete Items verändern deinen Avatar und deine Effekte.</p></div>
+        <div class="shop-tabs"><button class="active" data-filter="all">Alle</button><button data-filter="skin">Skins</button><button data-filter="hat">Hüte</button><button data-filter="trail">Trails</button><button data-filter="effect">Effects</button></div>
+        <div id="shopGrid" class="shop-grid"></div>
+      </section>
+
+      <section id="profile" class="view">
+        <div class="profile-head glass"><div class="profile-avatar" id="profileAvatar"><div class="head"></div><div class="body"></div><div class="visor"></div></div><div><span class="eyebrow">PLAYER PROFILE</span><h1>Arcade Explorer</h1><p id="profileLevel">Level 1 · 0 XP</p></div><button class="secondary" id="resetBtn">Fortschritt zurücksetzen</button></div>
+        <div class="stats-grid"><div class="stat glass"><span>🪙 Coins</span><b id="statCoins">0</b></div><div class="stat glass"><span>🎮 Games</span><b id="statGames">0</b></div><div class="stat glass"><span>🏆 Highscores</span><b id="statHighscores">0</b></div><div class="stat glass"><span>🔓 Cosmetics</span><b id="statCosmetics">1</b></div></div>
+        <div class="section-head"><div><span class="eyebrow">LEADERBOARD</span><h2>Deine Best Scores</h2></div></div>
+        <div id="leaderboard" class="leaderboard glass"></div>
+      </section>
+    </main>
+    <div id="toast"></div>
+    <footer>ARCADEVERSE · Built for GitHub Pages · Fortschritt wird lokal gespeichert</footer>
+  </div>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
