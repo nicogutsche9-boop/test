@@ -142,3 +142,14 @@ Do not expose admin credentials in the frontend.
 - Add CAPTCHA/abuse protection for public registration.
 - Add stronger score verification if leaderboards have real value.
 - Never put database credentials in GitHub Pages/frontend code.
+
+## App (PWA + Capacitor)
+
+ArcadeVerse is now installable as a **PWA** and prepared for native Android/iOS builds with Capacitor.
+
+1. Build the web app: `npm run build:web`
+2. Sync native platforms: `npm run cap:sync`
+3. Add platforms once if needed: `npx cap add android` and/or `npx cap add ios`
+4. Open the native project: `npm run cap:android` / `npm run cap:ios`
+
+The API URL is still configured through the frontend environment (`VITE_API_URL`). For a store build, point this to your deployed HTTPS backend.

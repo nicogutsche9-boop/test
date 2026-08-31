@@ -13,3 +13,16 @@
 .runnerStage .floor{position:absolute;left:0;right:0;bottom:32px;height:4px;border-radius:99px;background:currentColor;opacity:.28}
 .runnerStage .obstacle{position:absolute;left:102%;bottom:48px;width:28px;height:48px;border-radius:8px;z-index:4}
 @media(max-width:700px){.runnerStage{min-height:360px}.runnerStage .runner{left:14%;bottom:48px}.runnerStage .obstacle{bottom:48px}}
+
+.miniGrid{display:grid;grid-template-columns:repeat(2,minmax(110px,1fr));gap:14px;max-width:420px;margin:auto}
+.miniBtn{min-height:90px;border:1px solid #ffffff22;border-radius:18px;background:#ffffff0b;font-weight:900;font-size:24px}
+.miniBtn.flash{transform:scale(1.04);filter:brightness(1.7)}
+.question{text-align:center;font-size:42px;font-weight:900;margin:20px}
+.colorGame{text-align:center}.colorGame h2{font-size:52px;margin:20px}.colorChoices{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;max-width:500px;margin:auto}.colorChoice{min-height:75px;border:0;border-radius:16px;font-weight:900}
+.laneBoard,.stackBoard{position:relative;min-height:400px;max-width:600px;margin:auto;overflow:hidden;border-radius:24px;background:linear-gradient(90deg,#ffffff08 33%,transparent 33%,transparent 66%,#ffffff08 66%)}
+.lanePlayer,.laneObstacle{position:absolute;transform:translateX(-50%);width:54px;height:72px;border-radius:12px}
+.lanePlayer{bottom:8%;background:#fff;box-shadow:0 0 30px #fff}
+.laneObstacle{background:#ff4d7d;box-shadow:0 0 25px #ff4d7d}
+.stackBlock{position:absolute;height:28px;border-radius:8px;background:#fff;box-shadow:0 0 18px #fff;transform-origin:center}
+.stackBlock.moving{opacity:.75}
+@media(max-width:700px){.laneBoard,.stackBoard{min-height:350px}.question{font-size:34px}.colorGame h2{font-size:42px}}

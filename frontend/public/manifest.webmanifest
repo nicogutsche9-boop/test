@@ -1,0 +1,21 @@
+{
+  "name": "ArcadeVerse",
+  "short_name": "ArcadeVerse",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#090b14",
+  "theme_color": "#090b14",
+  "description": "ArcadeVerse V2 – Minispiele, Coins, XP und Highscores.",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

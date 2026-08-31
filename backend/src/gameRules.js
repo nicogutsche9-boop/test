@@ -3,7 +3,12 @@ export const GAME_RULES = {
   collector: { maxScore: 30000, coinBase: 30, coinRate: 0.010, xpRate: 0.024 },
   dodge:     { maxScore: 60000, coinBase: 35, coinRate: 0.008, xpRate: 0.020 },
   reaction:  { maxScore: 5000,  coinBase: 50, coinRate: 0.018, xpRate: 0.035 },
-  runner:    { maxScore: 60000, coinBase: 30, coinRate: 0.008, xpRate: 0.022 }
+  runner:    { maxScore: 60000, coinBase: 30, coinRate: 0.008, xpRate: 0.022 },
+  memory:    { maxScore: 60000, coinBase: 30, coinRate: 0.009, xpRate: 0.024 },
+  math:      { maxScore: 60000, coinBase: 30, coinRate: 0.010, xpRate: 0.026 },
+  color:     { maxScore: 60000, coinBase: 30, coinRate: 0.010, xpRate: 0.026 },
+  lane:      { maxScore: 60000, coinBase: 30, coinRate: 0.008, xpRate: 0.022 },
+  stack:     { maxScore: 60000, coinBase: 30, coinRate: 0.009, xpRate: 0.024 }
 };
 
 export function levelCost(level) {

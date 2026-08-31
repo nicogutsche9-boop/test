@@ -53,7 +53,7 @@ app.get("/api/me",requireAuth,async(req,res)=>{
 app.get("/api/games",(_,res)=>res.json({games:Object.keys(GAME_RULES)}));
 
 app.post("/api/scores",requireAuth,async(req,res)=>{
-  const parsed=z.object({gameId:z.enum(["target","collector","dodge","reaction","runner"]),score:z.number().int().min(0).max(1000000)}).safeParse(req.body);
+  const parsed=z.object({gameId:z.enum(["target","collector","dodge","reaction","runner","memory","math","color","lane","stack"]),score:z.number().int().min(0).max(1000000)}).safeParse(req.body);
   if(!parsed.success)return res.status(400).json({error:"Ungültiger Score."});
   const reward=calculateReward(parsed.data.gameId,parsed.data.score);
   const result=await prisma.$transaction(async tx=>{

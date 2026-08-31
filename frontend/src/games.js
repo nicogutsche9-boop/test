@@ -6,7 +6,12 @@ export const games = [
   { id:"collector", icon:"🪙", name:"Coin Collector", desc:"Coins in der Arena sammeln.", tag:"COLLECT", controls:"WASD / Pfeile / Touch" },
   { id:"dodge", icon:"🧱", name:"Dodge Cube", desc:"Hindernissen ausweichen.", tag:"DODGE", controls:"A/D / Pfeile / Touch" },
   { id:"reaction", icon:"⚡", name:"Reaction Test", desc:"So schnell wie möglich reagieren.", tag:"REFLEX", controls:"Tippen / Klicken" },
-  { id:"runner", icon:"🚀", name:"Neon Runner", desc:"Springen und möglichst weit kommen.", tag:"RUN", controls:"Space / ↑ / Tippen" }
+  { id:"runner", icon:"🚀", name:"Neon Runner", desc:"Springen und möglichst weit kommen.", tag:"RUN", controls:"Space / ↑ / Tippen" },
+  { id:"memory", icon:"🧠", name:"Memory Blitz", desc:"Merke dir die Sequenz und wiederhole sie.", tag:"MEMORY", controls:"Tasten / Touch" },
+  { id:"math", icon:"➗", name:"Math Rush", desc:"Löse so viele Rechenaufgaben wie möglich.", tag:"BRAIN", controls:"Tippen / Tastatur" },
+  { id:"color", icon:"🎨", name:"Color Match", desc:"Tippe die richtige Farbe so schnell wie möglich.", tag:"REFLEX", controls:"Touch / Maus" },
+  { id:"lane", icon:"🏎️", name:"Lane Switch", desc:"Wechsle die Spur und weiche Fahrzeugen aus.", tag:"DODGE", controls:"← / → / Touch" },
+  { id:"stack", icon:"🧱", name:"Stack Master", desc:"Staple Blöcke möglichst perfekt.", tag:"SKILL", controls:"Tippen / Space" }
 ];
 
 let cleanup = () => {};
@@ -48,6 +53,11 @@ export function startGame(id, stage, onFinish) {
   if (id === "dodge") return dodge(stage, scoreEl, hint, finish);
   if (id === "reaction") return reaction(stage, scoreEl, hint, finish);
   if (id === "runner") return runner(stage, scoreEl, hint, finish);
+  if (id === "memory") return memory(stage, scoreEl, hint, finish);
+  if (id === "math") return mathRush(stage, scoreEl, hint, finish);
+  if (id === "color") return colorMatch(stage, scoreEl, hint, finish);
+  if (id === "lane") return laneSwitch(stage, scoreEl, hint, finish);
+  if (id === "stack") return stackMaster(stage, scoreEl, hint, finish);
 }
 
 function target(stage, scoreEl, hint, finish) {
@@ -424,6 +434,165 @@ function runner(stage, scoreEl, hint, finish) {
     stage.classList.remove("runnerStage");
     stage.innerHTML = "";
   };
+}
+
+
+function buttonGrid(stage, count=4) {
+  const grid=document.createElement("div");
+  grid.className="miniGrid";
+  for(let i=0;i<count;i++){
+    const b=document.createElement("button");
+    b.type="button"; b.className="miniBtn"; b.dataset.index=String(i);
+    grid.append(b);
+  }
+  stage.append(grid);
+  return grid;
+}
+
+function memory(stage, scoreEl, hint, finish) {
+  let alive=true, round=0, input=0, sequence=[], timeout=null;
+  const grid=buttonGrid(stage,4);
+  const colors=["A","B","C","D"];
+  const nextRound=()=>{
+    if(!alive)return;
+    round++;
+    input=0;
+    sequence.push(Math.floor(Math.random()*4));
+    hint.textContent=`Runde ${round} · Merke dir die Sequenz`;
+    const show=async()=>{
+      for(let i=0;i<sequence.length;i++){
+        if(!alive)return;
+        const b=grid.children[sequence[i]];
+        b.classList.add("flash");
+        await new Promise(r=>timeout=setTimeout(r,260));
+        b.classList.remove("flash");
+        await new Promise(r=>timeout=setTimeout(r,120));
+      }
+      if(alive) hint.textContent="Jetzt wiederholen!";
+    };
+    show();
+  };
+  const click=e=>{
+    if(!alive || e.currentTarget.classList.contains("flash"))return;
+    const idx=Number(e.currentTarget.dataset.index);
+    if(idx!==sequence[input]){
+      finish((round-1)*250);
+      return;
+    }
+    input++;
+    scoreEl.textContent=String(round*250);
+    if(input===sequence.length) setTimeout(nextRound,300);
+  };
+  [...grid.children].forEach((b,i)=>{b.textContent=colors[i];b.addEventListener("pointerdown",click)});
+  nextRound();
+  cleanup=()=>{alive=false;clearTimeout(timeout);[...grid.children].forEach(b=>b.replaceWith(b.cloneNode(true)));stage.innerHTML=""};
+}
+
+function mathRush(stage, scoreEl, hint, finish) {
+  let alive=true, score=0, left=15, current=null;
+  const question=document.createElement("div"); question.className="question";
+  const answers=buttonGrid(stage,4); stage.prepend(question);
+  const make=()=>{
+    const a=5+Math.floor(Math.random()*16), b=2+Math.floor(Math.random()*12);
+    const op=Math.random()>.5?"+":"-";
+    current=op==="+"?a+b:a-b;
+    question.textContent=`${a} ${op} ${b} = ?`;
+    const vals=new Set([current]);
+    while(vals.size<4) vals.add(current+Math.floor(Math.random()*15)-7);
+    [...answers.children].forEach((x,i)=>{x.textContent=String([...vals][i])});
+  };
+  const click=e=>{
+    if(!alive)return;
+    if(Number(e.currentTarget.textContent)===current){score+=100;scoreEl.textContent=String(score);make()}
+    else {score=Math.max(0,score-50);scoreEl.textContent=String(score)}
+  };
+  [...answers.children].forEach(b=>b.addEventListener("pointerdown",click));
+  const timer=setInterval(()=>{left--;hint.textContent=`${left}s · richtige Antwort wählen`;if(left<=0)finish(score)},1000);
+  make();
+  cleanup=()=>{alive=false;clearInterval(timer);stage.innerHTML=""};
+}
+
+function colorMatch(stage, scoreEl, hint, finish) {
+  let alive=true, score=0, rounds=0, started=performance.now(), target="";
+  const box=document.createElement("div");box.className="colorGame";stage.append(box);
+  const palette=[
+    ["ROT","red"],["BLAU","blue"],["GRÜN","green"],["GELB","gold"]
+  ];
+  const make=()=>{
+    rounds++;
+    if(rounds>20){finish(score);return}
+    target=palette[Math.floor(Math.random()*palette.length)][0];
+    box.innerHTML=`<h2>${target}</h2><div class="colorChoices"></div>`;
+    const choices=box.querySelector(".colorChoices");
+    palette.forEach(([name,css])=>{
+      const b=document.createElement("button");b.type="button";b.className="colorChoice";b.textContent=name;b.style.background=css;b.style.color=css==="gold"?"#111":"white";
+      b.addEventListener("pointerdown",()=>{
+        if(!alive)return;
+        const elapsed=performance.now()-started; const gain=name===target?Math.max(50,500-Math.floor(elapsed/4)):0;
+        if(name===target){score+=gain;scoreEl.textContent=String(score);started=performance.now();make()}else hint.textContent="Falsch – weiter!";
+      });
+      choices.append(b);
+    });
+    hint.textContent="Tippe die angezeigte Farbe";
+  };
+  make();
+  cleanup=()=>{alive=false;stage.innerHTML=""};
+}
+
+function laneSwitch(stage, scoreEl, hint, finish) {
+  let alive=true, score=0, lane=1, speed=.22, last=performance.now(), spawn=0;
+  const board=document.createElement("div");board.className="laneBoard";stage.append(board);
+  const player=document.createElement("div");player.className="lanePlayer";board.append(player);
+  const obstacles=[];
+  const setLane=n=>{lane=Math.max(0,Math.min(2,n));player.style.left=`${lane*33.333+16.666}%`};
+  setLane(1);
+  const move=e=>{const k=String(e.key||"").toLowerCase();if(k==="arrowleft"||k==="a")setLane(lane-1);if(k==="arrowright"||k==="d")setLane(lane+1)};
+  addEventListener("keydown",move);
+  const sw=swipeController(stage,d=>{if(d==="left")setLane(lane-1);if(d==="right")setLane(lane+1)});
+  const add=()=>{const o=document.createElement("div");o.className="laneObstacle";const l=Math.floor(Math.random()*3);o.dataset.lane=String(l);o.style.left=`${l*33.333+16.666}%`;o.style.top="-12%";board.append(o);obstacles.push({el:o,y:-12,lane:l})};
+  const raf=(now)=>{
+    if(!alive)return;
+    const dt=Math.min(40,now-last);last=now;spawn+=dt;
+    if(spawn>Math.max(500,1050-score/500)){spawn=0;add()}
+    for(let i=obstacles.length-1;i>=0;i--){
+      const o=obstacles[i];o.y+=speed*dt;o.el.style.top=`${o.y}%`;
+      if(o.y>105){o.el.remove();obstacles.splice(i,1);score+=100;scoreEl.textContent=String(score);continue}
+      const a=player.getBoundingClientRect(),b=o.el.getBoundingClientRect();
+      if(o.lane===lane && !(a.right<b.left||a.left>b.right||a.bottom<b.top||a.top>b.bottom)){finish(score);return}
+    }
+    speed=Math.min(.48,speed+dt*.000002);hint.textContent=`Score ${score} · Spur wechseln`;
+    requestAnimationFrame(raf);
+  };
+  const id=requestAnimationFrame(raf);
+  cleanup=()=>{alive=false;cancelAnimationFrame(id);removeEventListener("keydown",move);sw();obstacles.forEach(o=>o.el.remove());stage.innerHTML=""};
+}
+
+function stackMaster(stage, scoreEl, hint, finish) {
+  let alive=true, score=0, x=0, dir=1, width=46, level=0, placed=[];
+  const board=document.createElement("div");board.className="stackBoard";stage.append(board);
+  const base=document.createElement("div");base.className="stackBlock";base.style.width=width+"%";base.style.left=(50-width/2)+"%";base.style.bottom="8%";board.append(base);placed.push({left:50-width/2,width});
+  let current=document.createElement("div");current.className="stackBlock moving";board.append(current);
+  const drop=()=>{
+    if(!alive)return;
+    const center=x+50;
+    const left=center-width/2;
+    const prev=placed[placed.length-1];
+    const overlap=Math.max(0,Math.min(left+width,prev.left+prev.width)-Math.max(left,prev.left));
+    if(overlap<8){finish(score);return}
+    width=overlap;
+    level++;score+=100+level*10;scoreEl.textContent=String(score);
+    const block=document.createElement("div");block.className="stackBlock";block.style.width=width+"%";block.style.left=(Math.max(0,Math.min(100-width,Math.max(left,prev.left))))+"%";block.style.bottom=(8+level*7)+"%";board.append(block);
+    placed.push({left:parseFloat(block.style.left),width});
+    current.remove();current=document.createElement("div");current.className="stackBlock moving";board.append(current);
+    x=0;dir=1;
+    if(level>=10)finish(score);
+  };
+  const key=e=>{if(e.key===" "||e.key==="Enter"||e.type==="pointerdown"){e.preventDefault();drop()}};
+  addEventListener("keydown",key);stage.addEventListener("pointerdown",key);
+  let raf=0,last=performance.now();
+  const loop=now=>{const dt=now-last;last=now;x+=dir*dt*.045;if(x>50-width/2||x<-(50-width/2)){dir*=-1;x+=dir*dt*.045}current.style.width=width+"%";current.style.left=`calc(50% + ${x-width/2}%)`;current.style.bottom=`${8+(level+1)*7}%`;hint.textContent=`Level ${level+1} · Tippen / Space zum Stapeln`;raf=requestAnimationFrame(loop)};
+  raf=requestAnimationFrame(loop);
+  cleanup=()=>{alive=false;cancelAnimationFrame(raf);removeEventListener("keydown",key);stage.removeEventListener("pointerdown",key);stage.innerHTML=""};
 }
 
 export function init3D() {
