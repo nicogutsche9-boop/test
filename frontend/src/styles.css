@@ -6,3 +6,10 @@
 @media (max-width:700px){.mobileControls{display:flex}.stage{touch-action:none}.playtop>strong{font-size:28px}.mobileControls button:active{transform:scale(.94);background:#ffffff22}}
 
 .daily{margin:15px 0 45px;padding:22px;border-radius:22px}.daily small{color:var(--cyan);letter-spacing:2px;font-weight:800}.daily h2{margin:7px 0 18px}.dailygrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.dailygrid>div{padding:14px;border:1px solid var(--line);border-radius:14px;background:#ffffff06}.dailygrid b,.dailygrid span{display:block}.dailygrid span{color:var(--muted);font-size:12px;margin-top:7px}@media(max-width:700px){.dailygrid{grid-template-columns:1fr}}
+
+/* Neon Runner v2: stable coordinate system for desktop + mobile */
+.runnerStage{position:relative;overflow:hidden;min-height:420px}
+.runnerStage .runner{position:absolute;left:12%;bottom:48px;width:34px;height:34px;z-index:5;will-change:transform}
+.runnerStage .floor{position:absolute;left:0;right:0;bottom:32px;height:4px;border-radius:99px;background:currentColor;opacity:.28}
+.runnerStage .obstacle{position:absolute;left:102%;bottom:48px;width:28px;height:48px;border-radius:8px;z-index:4}
+@media(max-width:700px){.runnerStage{min-height:360px}.runnerStage .runner{left:14%;bottom:48px}.runnerStage .obstacle{bottom:48px}}
