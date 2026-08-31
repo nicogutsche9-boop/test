@@ -1,0 +1,137 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum CosmeticType {
+  SKIN
+  HAT
+  TRAIL
+  EFFECT
+}
+
+enum Rarity {
+  COMMON
+  UNCOMMON
+  RARE
+  EPIC
+  LEGENDARY
+}
+
+model User {
+  id             String          @id @default(cuid())
+  email          String          @unique
+  passwordHash   String
+  displayName    String
+  coins          Int             @default(500)
+  xp             Int             @default(0)
+  level          Int             @default(1)
+  isAdmin        Boolean         @default(false)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  scores         Score[]
+  inventory      Inventory[]
+  challenges    ChallengeProgress[]
+  passClaims     PassClaim[]
+}
+
+model Score {
+  id          String   @id @default(cuid())
+  userId      String
+  gameId      String
+  score       Int
+  coinsAwarded Int
+  xpAwarded   Int
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([gameId, score])
+  @@index([userId, createdAt])
+}
+
+model Cosmetic {
+  id          String       @id
+  type        CosmeticType
+  name        String
+  price       Int
+  rarity      Rarity
+  icon        String
+  createdAt   DateTime     @default(now())
+  inventory   Inventory[]
+  passRewards PassReward[]
+}
+
+model Inventory {
+  id         String   @id @default(cuid())
+  userId     String
+  cosmeticId String
+  ownedAt    DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  cosmetic   Cosmetic @relation(fields: [cosmeticId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, cosmeticId])
+}
+
+model Season {
+  id        String       @id @default(cuid())
+  name      String
+  number    Int
+  startsAt  DateTime
+  endsAt    DateTime
+  active    Boolean      @default(false)
+  rewards   PassReward[]
+}
+
+model PassReward {
+  id         String    @id @default(cuid())
+  seasonId   String
+  tier       Int
+  coins      Int       @default(0)
+  cosmeticId String?
+  season     Season    @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+  cosmetic   Cosmetic? @relation(fields: [cosmeticId], references: [id])
+  claims     PassClaim[]
+
+  @@unique([seasonId, tier])
+}
+
+model PassClaim {
+  id       String     @id @default(cuid())
+  userId   String
+  rewardId String
+  claimedAt DateTime  @default(now())
+  user     User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reward   PassReward @relation(fields: [rewardId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, rewardId])
+}
+
+model DailyChallenge {
+  id        String   @id @default(cuid())
+  dateKey   String
+  challengeId String
+  title     String
+  gameId    String?
+  target    Int
+  rewardCoins Int
+  rewardXp  Int
+  createdAt DateTime @default(now())
+
+  @@unique([dateKey, challengeId])
+}
+
+model ChallengeProgress {
+  id          String   @id @default(cuid())
+  userId      String
+  challengeId String
+  dateKey     String
+  value       Int      @default(0)
+  completed   Boolean  @default(false)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, challengeId, dateKey])
+}

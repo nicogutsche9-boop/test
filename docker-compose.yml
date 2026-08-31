@@ -1,0 +1,14 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: arcade
+      POSTGRES_PASSWORD: arcade_dev_password
+      POSTGRES_DB: arcadeverse
+    ports:
+      - "5432:5432"
+    volumes:
+      - arcadeverse_pg:/var/lib/postgresql/data
+volumes:
+  arcadeverse_pg:

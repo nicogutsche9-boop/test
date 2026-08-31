@@ -1,78 +1,144 @@
-# ArcadeVerse
+# ArcadeVerse V2
 
-Eine fertige, statische 3D-Mini-Game-Webseite als GitHub-Pages-Projekt.
+Full-stack 3D mini-game platform with accounts, cloud saves, secure score submissions, global leaderboards, coins, XP, daily challenges, season battle pass, cosmetics, inventory and an admin API.
 
-## Enthalten
+## Stack
 
-- 3D animierter Hintergrund mit Three.js
-- 5 Minispiele:
-  - Target Rush
-  - Coin Collector
-  - Dodge Cube
-  - Reaction Test
-  - Neon Runner
-- Highscores
-- Coins & XP
-- Level-System
-- lokales Speichern mit `localStorage`
-- Daily Challenges
-- Season Battle Pass
-- Cosmetic Shop
-- Skins, Hüte, Trails und Effects
-- Profil / Leaderboard
-- Responsive Design für Desktop und Mobile
-- komplett ohne Build-Step
+- Frontend: Vite + Vanilla JS + Three.js
+- Backend: Node.js + Express
+- Database: PostgreSQL + Prisma
+- Auth: JWT + bcrypt
+- Deployment: Frontend can go to GitHub Pages; backend can go to Render/Railway/Fly.io/etc.
+- CORS, rate limiting, helmet and server-side reward validation included
 
-## Start lokal
+## Project
 
-Ein einfacher statischer Server reicht:
-
-```bash
-python -m http.server 8080
+```text
+arcadeverse-v2/
+├── frontend/
+│   ├── index.html
+│   ├── styles.css
+│   ├── src/
+│   │   ├── main.js
+│   │   ├── api.js
+│   │   ├── state.js
+│   │   └── games.js
+│   ├── package.json
+│   └── vite.config.js
+├── backend/
+│   ├── src/
+│   │   ├── server.js
+│   │   ├── auth.js
+│   │   ├── gameRules.js
+│   │   └── seed.js
+│   ├── prisma/
+│   │   └── schema.prisma
+│   ├── package.json
+│   └── .env.example
+├── .github/workflows/
+│   └── frontend-pages.yml
+├── docker-compose.yml
+├── .gitignore
+└── README.md
 ```
 
-Dann `http://localhost:8080` öffnen.
+## Local development
 
-Alternativ mit VS Code die Datei mit Live Server starten.
+### 1. Start PostgreSQL
+
+```bash
+docker compose up -d db
+```
+
+### 2. Backend
+
+```bash
+cd backend
+cp .env.example .env
+npm install
+npx prisma generate
+npx prisma migrate dev --name init
+npm run seed
+npm run dev
+```
+
+Backend: `http://localhost:4000`
+
+### 3. Frontend
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Frontend: `http://localhost:5173`
+
+Set `VITE_API_URL=http://localhost:4000/api` if needed.
 
 ## GitHub Pages
 
-1. Neues GitHub-Repository erstellen.
-2. Alle Dateien aus diesem Ordner hochladen.
-3. In GitHub unter **Settings → Pages**:
-   - Source: **Deploy from a branch**
-   - Branch: `main`
-   - Folder: `/ (root)`
-4. Speichern.
+The included GitHub Actions workflow builds and publishes the frontend automatically.
 
-Die Seite wird anschließend als GitHub-Pages-Webseite veröffentlicht.
+Repository Settings → Pages → Source: GitHub Actions.
 
-## Hinweis zur Speicherung
+Set your production API URL as a repository variable:
 
-Der aktuelle Fortschritt wird lokal im Browser gespeichert. Das bedeutet:
+`Settings → Secrets and variables → Actions → Variables`
 
-- kein Login nötig
-- kein Backend nötig
-- GitHub Pages reicht aus
-- Fortschritt ist geräte-/browserabhängig
+Variable:
 
-Für echte globale Online-Highscores, Accounts, Cloud-Saves und serverseitig sichere Coins braucht das Projekt später ein Backend bzw. eine Datenbank.
+`VITE_API_URL=https://YOUR-BACKEND-DOMAIN/api`
 
-## Tech
+## Backend deployment
 
-- HTML
-- CSS
-- Vanilla JavaScript
-- Three.js via CDN
-- localStorage
+Create a PostgreSQL database and configure:
 
-## Struktur
-
-```text
-arcadeverse/
-├── index.html
-├── styles.css
-├── app.js
-├── assets/
-└── README.md
+```env
+DATABASE_URL=postgresql://...
+JWT_SECRET=use-a-long-random-secret
+CLIENT_ORIGIN=https://YOUR-USERNAME.github.io
+PORT=4000
+ADMIN_EMAIL=admin@example.com
 ```
+
+Then:
+
+```bash
+npm install
+npx prisma migrate deploy
+npm run seed
+npm start
+```
+
+The backend must be reachable from the browser. GitHub Pages only hosts the frontend.
+
+## Security model
+
+The browser never decides the final coin/XP reward. It submits a score and game ID. The backend validates the score against conservative server rules, calculates the reward, updates progression in a transaction, and records the score.
+
+This is not an anti-cheat system for a competitive esports game. Client-side browser games can still be manipulated by determined users. For stronger anti-cheat, move game simulation to a trusted server or add replay/telemetry validation.
+
+## Admin
+
+The API includes admin endpoints for:
+
+- creating/updating seasons
+- creating cosmetics
+- creating daily challenges
+- viewing users
+
+An account becomes admin when its email matches `ADMIN_EMAIL` during registration.
+
+Do not expose admin credentials in the frontend.
+
+## Production checklist
+
+- Use HTTPS.
+- Use a strong random `JWT_SECRET`.
+- Restrict `CLIENT_ORIGIN` to your real frontend.
+- Add a managed PostgreSQL database.
+- Add transactional email/password reset before public launch.
+- Add CAPTCHA/abuse protection for public registration.
+- Add stronger score verification if leaderboards have real value.
+- Never put database credentials in GitHub Pages/frontend code.
